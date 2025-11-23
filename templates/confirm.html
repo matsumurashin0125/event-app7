@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日確定</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>候補日一覧</h2>
+
+<table border="1">
+    <tr>
+        <th>日付</th>
+        <th>体育館</th>
+        <th>時間</th>
+        <th>確定</th>
+        <th>編集</th>
+        <th>削除</th>
+    </tr>
+
+    {% for c in candidates %}
+    <tr>
+        <td>{{ c.year }}-{{ '%02d'|format(c.month) }}-{{ '%02d'|format(c.day) }}</td>
+        <td>{{ c.gym }}</td>
+        <td>{{ c.start }} 〜 {{ c.end }}</td>
+
+        <!-- 確定ボタン -->
+        <td>
+            <form method="POST" action="{{ url_for('confirm') }}">
+                <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                <button>確定</button>
+            </form>
+        </td>
+
+        <!-- 編集 -->
+        <td>
+            <form method="GET" action="{{ url_for('edit_candidate', id=c.id) }}">
+                <button>編集</button>
+            </form>
+        </td>
+
+        <!-- 削除 -->
+        <td>
+            <form method="POST" action="{{ url_for('delete_candidate', id=c.id) }}">
+                <button onclick="return confirm('この候補日を削除しますか？')">削除</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br><hr>
+
+<h2>確定済み日程</h2>
+
+<table border="1">
+    <tr>
+        <th>日付</th>
+        <th>体育館</th>
+        <th>時間</th>
+    </tr>
+
+    {% for confirm, c in confirmed %}
+    <tr>
+        <td>{{ c.year }}-{{ '%02d'|format(c.month) }}-{{ '%02d'|format(c.day) }}</td>
+        <td>{{ c.gym }}</td>
+        <td>{{ c.start }} 〜 {{ c.end }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+<a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
+
+</body>
+</html>

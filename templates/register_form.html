@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>参加登録</h2>
+
+<div class="card">
+    <div class="card-title">
+        {{ candidate.month }}月{{ candidate.day }}日（{{ candidate.year }}）
+    </div>
+    <div class="card-sub">
+        体育館：{{ candidate.gym }}<br>
+        時間：{{ candidate.start }}〜{{ candidate.end }}
+    </div>
+</div>
+
+<br>
+
+<form method="POST">
+    <label>名前：</label>
+    <select name="name" required>
+        <option value="">選択してください</option>
+        {% for m in members %}
+            <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+    </select>
+
+    <label>出欠：</label>
+    <select name="status" required>
+        <option value="">選択してください</option>
+        <option value="参加">参加</option>
+        <option value="欠席">欠席</option>
+        <option value="未定">未定</option>
+    </select>
+
+    <button type="submit">登録</button>
+</form>
+
+<h3>現在の登録者</h3>
+<ul>
+    {% for a in attendance %}
+        <li>{{ a.name }}：{{ a.status }}</li>
+    {% endfor %}
+</ul>
+
+<br>
+<a class="back-link" href="{{ url_for('register') }}">← 日付選択に戻る</a>
+<br>
+<a class="back-link" href="{{ url_for('home') }}">← ホームに戻る</a>
+
+</body>
+</html>

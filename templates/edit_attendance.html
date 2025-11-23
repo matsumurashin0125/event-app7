@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>出欠 編集</title>
+</head>
+<body>
+<h2>出欠 編集</h2>
+
+<form method="POST">
+    名前:
+    <select name="name">
+        {% for m in members %}
+        <option value="{{ m }}" {% if m == att.name %}selected{% endif %}>{{ m }}</option>
+        {% endfor %}
+    </select><br>
+
+    状態:
+    <select name="status">
+        <option value="参加" {% if att.status == "参加" %}selected{% endif %}>参加</option>
+        <option value="未定" {% if att.status == "未定" %}selected{% endif %}>未定</option>
+        <option value="不参加" {% if att.status == "不参加" %}selected{% endif %}>不参加</option>
+    </select><br>
+
+    <button type="submit">更新</button>
+</form>
+
+<a href="{{ url_for('register', event_id=att.event_id) }}">戻る</a>
+</body>
+</html>

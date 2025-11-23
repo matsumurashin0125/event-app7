@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>メニュー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>ページ選択</h1>
+
+<div class="menu-container">
+
+    <!-- 参加登録（一般） -->
+    <a class="btn" href="{{ url_for('register') }}">参加登録</a>
+
+    <!-- 管理者メニュー（認証なしでそのままアクセス可能） -->
+    <a class="btn admin-btn" href="{{ url_for('admin_menu') }}">管理者メニュー</a>
+
+</div>
+
+</body>
+</html>

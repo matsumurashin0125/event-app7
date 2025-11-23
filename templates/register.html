@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>参加登録</h2>
+
+<!-- イベント選択 -->
+<form method="GET">
+    <select name="event_id" onchange="this.form.submit()">
+        <option value="">選択してください</option>
+
+        {% for confirm, c in events %}
+        <option value="{{ confirm.id }}"
+            {% if selected_event and selected_event|int == confirm.id %}selected{% endif %}
+        >
+            {{ c.year }}-{{ '%02d'|format(c.month) }}-{{ '%02d'|format(c.day) }}（{{ c.gym }}）
+        </option>
+        {% endfor %}
+    </select>
+</form>
+
+<hr>
+
+{% if selected_event %}
+
+<h3>出欠入力</h3>
+
+<form method="POST">
+    <input type="hidden" name="event_id" value="{{ selected_event }}">
+
+    名前:
+    <select name="name">
+        {% for m in members %}
+        <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+    </select>
+
+    状態:
+    <select name="status">
+        <option value="参加">参加</option>
+        <option value="未定">未定</option>
+        <option value="不参加">不参加</option>
+    </select>
+
+    <button type="submit">送信</button>
+</form>
+
+<br><hr>
+
+<h3>登録済み 出欠一覧</h3>
+
+<table border="1">
+    <tr>
+        <th>名前</th>
+        <th>状態</th>
+        {% if session.admin_logged_in %}
+        <th>編集</th>
+        <th>削除</th>
+        {% endif %}
+    </tr>
+
+    {% for a in attendance %}
+    <tr>
+        <td>{{ a.name }}</td>
+        <td>{{ a.status }}</td>
+
+        {% if session.admin_logged_in %}
+        <!-- 編集ボタン -->
+        <td>
+            <form method="GET" action="{{ url_for('edit_attendance', id=a.id) }}">
+                <button>編集</button>
+            </form>
+        </td>
+
+        <!-- 削除ボタン -->
+        <td>
+            <form method="POST" action="{{ url_for('delete_attendance', id=a.id) }}">
+                <button onclick="return confirm('削除しますか？')">削除</button>
+            </form>
+        </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>
+
+{% endif %}
+
+<br>
+<a href="{{ url_for('home') }}">ホームへ戻る</a>
+
+</body>
+</html>
