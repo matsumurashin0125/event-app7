@@ -11,10 +11,13 @@
 
 <div class="menu-container">
 
+    <!-- 自分の名前を設定 -->
+    <a class="btn" href="{{ url_for('set_name') }}">自分の名前を設定</a>
+
     <!-- 参加登録（一般） -->
     <a class="btn" href="{{ url_for('register') }}">参加登録</a>
 
-    <!-- 管理者メニュー（認証なしでそのままアクセス可能） -->
+    <!-- 管理者メニュー -->
     <a class="btn admin-btn" href="{{ url_for('admin_menu') }}">管理者メニュー</a>
 
 </div>
