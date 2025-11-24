@@ -25,13 +25,21 @@
         <td>{{ c.gym }}</td>
         <td>{{ c.start }} 〜 {{ c.end }}</td>
 
-        <!-- 確定ボタン -->
-        <td>
-            <form method="POST" action="{{ url_for('confirm') }}">
-                <input type="hidden" name="candidate_id" value="{{ c.id }}">
-                <button>確定</button>
-            </form>
+       <td>
+            {% if c.id in confirmed_ids %}
+                <!-- 確定解除ボタン -->
+                <form method="POST" action="{{ url_for('unconfirm', candidate_id=c.id) }}">
+                    <button style="background:#e67e22; color:white;">確定解除</button>
+                </form>
+            {% else %}
+                <!-- 確定ボタン -->
+                <form method="POST" action="{{ url_for('confirm') }}">
+                    <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                    <button>確定</button>
+                </form>
+            {% endif %}
         </td>
+
 
         <!-- 編集 -->
         <td>
