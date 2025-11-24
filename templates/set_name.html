@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>名前を選択</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>あなたの名前を選んでください</h1>
+
+<div class="card">
+    <form method="POST" action="">
+        <label for="user_name">名前</label>
+        <select name="user_name" id="user_name" required>
+            <option value="">-- 選択してください --</option>
+            {% for m in members %}
+            <option value="{{ m }}">{{ m }}</option>
+            {% endfor %}
+        </select>
+
+        <button class="btn" type="submit" style="margin-top:15px;">決定</button>
+    </form>
+</div>
+
+</body>
+</html>
