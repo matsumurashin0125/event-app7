@@ -62,21 +62,40 @@
 
 <h2>確定済み日程</h2>
 
-<table border="1">
-    <tr>
-        <th>日付</th>
-        <th>体育館</th>
-        <th>時間</th>
-    </tr>
+{% for ev in confirmed_info %}
+<div class="event-box" style="border:1px solid #ccc; padding:10px; margin-bottom:15px;">
 
-    {% for confirm, c in confirmed %}
-    <tr>
-        <td class="date-large">{{ c.md }}</td>
-        <td>{{ c.gym }}</td>
-        <td>{{ c.start }} 〜 {{ c.end }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    <h3>{{ ev.md }} {{ ev.gym }} {{ ev.start }}〜{{ ev.end }}</h3>
+
+    <p>
+        参加: {{ ev.count_participants }}名  
+        {% if ev.participants %}
+            （{{ ev.participants | join(", ") }}）
+        {% endif %}
+    </p>
+
+    <p>
+        不参加: {{ ev.count_absents }}名  
+        {% if ev.absents %}
+            （{{ ev.absents | join(", ") }}）
+        {% endif %}
+    </p>
+
+    <!-- 編集ページへ -->
+    <a href="{{ url_for('manage_event_attendance', event_id=ev.id) }}">
+        ▶ 参加者 編集ページへ
+    </a>
+
+    <br><br>
+
+    <!-- 確定解除 -->
+    <form method="POST" action="{{ url_for('unconfirm', candidate_id=ev.candidate_id) }}">
+        <button type="submit" style="background:#e67e22; color:white;">確定解除</button>
+    </form>
+
+</div>
+{% endfor %}
+
 
 <br>
 <a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a>
