@@ -305,7 +305,6 @@ def create_app():
 
     import base64
     import pytz
-    from datetime import datetime
     from sendgrid import SendGridAPIClient
     from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
     
