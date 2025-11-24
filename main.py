@@ -150,7 +150,7 @@ def create_app():
         # 候補日を月/日（曜）付きに整形
         # -----------------------------
         def format_candidate(c):
-            d = datetime.date(c.year, c.month, c.day)
+            d = date(c.year, c.month, c.day)
             youbi = ["月","火","水","木","金","土","日"][d.weekday()]
             return {
                 "id": c.id,
