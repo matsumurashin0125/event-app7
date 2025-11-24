@@ -1,57 +1,63 @@
-<!DOCTYPE html>
-<html>
+<!-- templates/register_form.html -->
+<!doctype html>
+<html lang="ja">
 <head>
-    <title>参加登録</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <title>参加登録</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","メイリオ",sans-serif;padding:20px}
+    .card{max-width:720px;margin:20px auto;border:1px solid #eee;padding:16px;border-radius:8px}
+    label{display:block;margin-bottom:6px;font-weight:600}
+    select,input[type="text"],button{padding:8px;font-size:16px;width:100%;box-sizing:border-box}
+    .btn{background:#2b7cff;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border:1px solid #f0f0f0;padding:8px;text-align:left}
+    .muted{color:#666;font-size:13px}
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h2>参加登録 — {{ candidate.gym }} {{ candidate.year }}/{{ candidate.month }}/{{ candidate.day }}</h2>
 
-<h2>参加登録</h2>
-
-<div class="card">
-    <div class="card-title">
-        {{ candidate.month }}月{{ candidate.day }}日（{{ candidate.year }}）
-    </div>
-    <div class="card-sub">
-        体育館：{{ candidate.gym }}<br>
-        時間：{{ candidate.start }}〜{{ candidate.end }}
-    </div>
-</div>
-
-<br>
-
-<form method="POST">
-    <label>名前：</label>
-    <select name="name" required>
-        <option value="">選択してください</option>
-        {% for m in members %}
+    <form method="POST" action="">
+      <div>
+        <label for="name">名前</label>
+        <select name="name" id="name" required>
+          <option value="">-- 選択してください --</option>
+          {% for m in members %}
             <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label>出欠</label>
+        <label><input type="radio" name="status" value="参加" checked> 参加</label>
+        <label><input type="radio" name="status" value="未定"> 未定</label>
+        <label><input type="radio" name="status" value="欠席"> 欠席</label>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">送信（参加であればGoogleカレンダー/ICSを送信）</button>
+      </div>
+    </form>
+
+    <h3 style="margin-top:18px">現在の出欠</h3>
+    <table>
+      <thead><tr><th>名前</th><th>状態</th><th>登録日時</th></tr></thead>
+      <tbody>
+        {% for a in attendance %}
+          <tr>
+            <td>{{ a.name }}</td>
+            <td>{{ a.status }}</td>
+            <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') if a.created_at else '' }}</td>
+          </tr>
         {% endfor %}
-    </select>
+      </tbody>
+    </table>
 
-    <label>出欠：</label>
-    <select name="status" required>
-        <option value="">選択してください</option>
-        <option value="参加">参加</option>
-        <option value="欠席">欠席</option>
-        <option value="未定">未定</option>
-    </select>
-
-    <button type="submit">登録</button>
-</form>
-
-<h3>現在の登録者</h3>
-<ul>
-    {% for a in attendance %}
-        <li>{{ a.name }}：{{ a.status }}</li>
-    {% endfor %}
-</ul>
-
-<br>
-<a class="back-link" href="{{ url_for('register') }}">← 日付選択に戻る</a>
-<br>
-<a class="back-link" href="{{ url_for('home') }}">← ホームに戻る</a>
-
+    <p class="muted">※ メールアドレスはサーバ側で管理され、外部には公開されません（テンプレートに表示されません）。</p>
+  </div>
 </body>
 </html>
