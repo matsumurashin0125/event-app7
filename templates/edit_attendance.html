@@ -1,29 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <title>出欠 編集</title>
+    <meta charset="UTF-8">
+    <title>出欠編集</title>
 </head>
 <body>
-<h2>出欠 編集</h2>
+    <h2>出欠編集</h2>
 
-<form method="POST">
-    名前:
-    <select name="name">
-        {% for m in members %}
-        <option value="{{ m }}" {% if m == att.name %}selected{% endif %}>{{ m }}</option>
-        {% endfor %}
-    </select><br>
+    <form action="{{ url_for('edit_attendance', id=att.id) }}" method="POST">
+        <label>名前：</label>
+        <select name="name">
+            {% for m in members %}
+            <option value="{{ m }}" {% if att.name == m %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+        <br><br>
 
-    状態:
-    <select name="status">
-        <option value="参加" {% if att.status == "参加" %}selected{% endif %}>参加</option>
-        <option value="未定" {% if att.status == "未定" %}selected{% endif %}>未定</option>
-        <option value="不参加" {% if att.status == "不参加" %}selected{% endif %}>不参加</option>
-    </select><br>
+        <label>ステータス：</label>
+        <select name="status">
+            <option value="出席" {% if att.status == "出席" %}selected{% endif %}>出席</option>
+            <option value="欠席" {% if att.status == "欠席" %}selected{% endif %}>欠席</option>
+            <option value="未定" {% if att.status == "未定" %}selected{% endif %}>未定</option>
+        </select>
+        <br><br>
 
-    <button type="submit">更新</button>
-</form>
+        <button type="submit">更新</button>
+    </form>
 
-<a href="{{ url_for('register', event_id=att.event_id) }}">戻る</a>
+    <hr>
+
+    <!-- 削除ボタン -->
+    <form action="{{ url_for('delete_attendance', id=att.id) }}" method="POST"
+          onsubmit="return confirm('本当に削除しますか？');">
+        <button type="submit">削除</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('register_event', candidate_id=att.event.candidate_id) }}">戻る</a>
 </body>
 </html>
