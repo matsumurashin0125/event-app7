@@ -368,8 +368,8 @@ def create_app():
     
         uid = f"{candidate.id}-{start_utc}@event-app.local"
 
-        start_str = start_local.strftime("%H:%M")
-        end_str = end_local.strftime("%H:%M")
+        start_str = dt_start.strftime("%H:%M")
+        end_str = dt_end.strftime("%H:%M")
 
         ics_content = (
             "BEGIN:VCALENDAR\r\n"
@@ -395,9 +395,10 @@ def create_app():
             start_utc=start_utc,
             end_utc=end_utc,
             recipient_name=recipient_name,
-            location=candidate.gym
+            location=candidate.gym,
+            start_str=start_str,
+            end_str=end_str
         )
-
     
         # ==========
         # 3) Base64 エンコード（SendGrid 必須）
