@@ -182,10 +182,8 @@ def create_app():
                 recipient_email = MEMBER_EMAILS.get(name)
                 if recipient_email:
                     try:
-                        send_ics_via_gmail(candidate, recipient_name=name, recipient_email=recipient_email,
-                                           smtp_user=SMTP_USER, smtp_pass=SMTP_PASS,
-                                           smtp_server=SMTP_SERVER, smtp_port=SMTP_PORT,
-                                           local_tz=LOCAL_TZ)
+                        send_ics_via_sendgrid(candidate, name, recipient_email)
+                        
                     except Exception as e:
                         app.logger.error("ICS send failed: %s", e)
                         app.logger.error(traceback.format_exc())  # ← これを追加！
