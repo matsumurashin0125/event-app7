@@ -154,6 +154,11 @@ th {
     color: white;
 }
 
+/* 確定済み候補日を薄い灰色にする */
+.confirmed {
+    background: #e0e0e0 !important;
+}
+
 tr:nth-child(even) {
     background: #f8fbfd;
 }
