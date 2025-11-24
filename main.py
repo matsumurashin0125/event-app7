@@ -219,10 +219,24 @@ def create_app():
     @app.route("/candidate/<int:id>/delete", methods=["POST"])
     def delete_candidate(id):
         cand = Candidate.query.get_or_404(id)
+    
+        # ① Attendance を先に削除
+        # Attendance → Confirmed (event_id) → Candidate
+        Attendance.query.filter(
+            Attendance.event_id.in_(
+                db.session.query(Confirmed.id).filter_by(candidate_id=id)
+            )
+        ).delete(synchronize_session=False)
+    
+        # ② Confirmed を削除
         Confirmed.query.filter_by(candidate_id=id).delete()
+    
+        # ③ Candidate を削除
         db.session.delete(cand)
         db.session.commit()
-        return redirect(url_for("confirm"))
+    
+        return redirect(url_for("admin"))
+
 
     # ------------------------------
     # 出欠編集
