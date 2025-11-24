@@ -141,7 +141,19 @@ def create_app():
             .all()
         )
 
-        return render_template("confirm.html", candidates=candidates, confirmed=confirmed)
+        confirmed_list = (
+            db.session.query(Confirmed)
+            .all()
+        )
+        
+        confirmed_ids = [c.candidate_id for c in confirmed_list]
+        
+        return render_template(
+            "confirm.html",
+            candidates=candidates,
+            confirmed=confirmed,
+            confirmed_ids=confirmed_ids
+        )
 
     # ------------------------------
     # 参加登録（カード方式）
