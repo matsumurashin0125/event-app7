@@ -156,6 +156,17 @@ def create_app():
         )
 
     # ------------------------------
+    # 確定取消し
+    # ------------------------------
+    @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
+    def unconfirm(candidate_id):
+        conf = Confirmed.query.filter_by(candidate_id=candidate_id).first()
+        if conf:
+            db.session.delete(conf)
+            db.session.commit()
+        return redirect(url_for("confirm"))
+
+    # ------------------------------
     # 参加登録（カード方式）
     # ------------------------------
     @app.route("/register", methods=["GET"])
