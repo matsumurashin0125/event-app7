@@ -159,6 +159,12 @@ th {
     background: #e0e0e0 !important;
 }
 
+.date-large {
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 6px;
+}
+
 tr:nth-child(even) {
     background: #f8fbfd;
 }
