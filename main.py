@@ -361,7 +361,7 @@ def create_app():
             subtype="calendar",
             filename="invite.ics",
             headers=[
-                ("Content-Type", 'text/calendar; method=REQUEST; charset="utf-8"')
+                'Content-Type: text/calendar; method=REQUEST; charset="utf-8"'
             ]
         )
 
