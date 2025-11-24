@@ -235,7 +235,7 @@ def create_app():
         db.session.delete(cand)
         db.session.commit()
     
-        return redirect(url_for("admin"))
+        return redirect(url_for("admin_menu"))
 
 
     # ------------------------------
