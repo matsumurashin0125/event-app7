@@ -370,8 +370,9 @@ def create_app():
         except Exception:
             print("ICS send FAILED")
             print(traceback.format_exc())
-            raise
+            return False
 
+        return True
 
     # DB create
     with app.app_context():
