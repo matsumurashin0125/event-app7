@@ -164,7 +164,7 @@ def create_app():
     
         confirmed_fmt = []
         for cnf, c in confirmed:
-            d = datetime.date(c.year, c.month, c.day)
+            d = date(c.year, c.month, c.day)
             youbi = ["月","火","水","木","金","土","日"][d.weekday()]
             confirmed_fmt.append((cnf, {
                 "gym": c.gym,
