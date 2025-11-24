@@ -8,7 +8,7 @@ import smtplib
 from datetime import datetime, timedelta, date, timezone
 from zoneinfo import ZoneInfo
 from email.message import EmailMessage
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import traceback
 
 from models import db, Candidate, Confirmed, Attendance
@@ -62,6 +62,20 @@ def create_app():
     @app.route("/home")
     def home():
         return render_template("home.html")
+
+    # ------------------------------
+    # 追加：ユーザー名の選択・保存
+    # ------------------------------
+    @app.route("/set_name", methods=["GET", "POST"])
+    def set_name():
+        members = ["松村", "山火", "山根", "奥迫", "川崎"]
+
+        if request.method == "POST":
+            # 選択した名前をセッションへ保存
+            session["user_name"] = request.form["user_name"]
+            return redirect(url_for("home"))
+
+        return render_template("set_name.html", members=members)
 
     @app.route("/admin")
     def admin_menu():
@@ -150,12 +164,15 @@ def create_app():
 
     @app.route("/register", methods=["GET"])
     def register():
+        user_name = session.get("user_name")
         candidates = Candidate.query.order_by(
             Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc()
         ).all()
-        return render_template("register_select.html", candidates=candidates)
+        return render_template("register_select.html",
+                               candidates=candidates,
+                               user_name=user_name)  
 
-    # --- CHANGED: register_event — on POST send ICS to member's Gmail if status == "参加"
+    
     @app.route("/register/event/<int:candidate_id>", methods=["GET", "POST"])
     def register_event(candidate_id):
         candidate = Candidate.query.get_or_404(candidate_id)
@@ -167,6 +184,8 @@ def create_app():
             db.session.commit()
 
         members = ["松村", "山火", "山根", "奥迫", "川崎"]
+
+        default_name = session.get("user_name")
 
         if request.method == "POST":
             name = request.form["name"]
@@ -192,7 +211,11 @@ def create_app():
             return redirect(url_for("register"))
 
         attendance = Attendance.query.filter_by(event_id=event.id).all()
-        return render_template("register_form.html", candidate=candidate, attendance=attendance, members=members)
+        return render_template("register_form.html",
+                               candidate=candidate,
+                               attendance=attendance,
+                               members=members,
+                               default_name=default_name)
 
     @app.route("/candidate/<int:id>/edit", methods=["GET", "POST"])
     def edit_candidate(id):
