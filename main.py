@@ -126,7 +126,6 @@ def create_app():
         candidates = Candidate.query.order_by(
             Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc()
         ).all()
-    
         if request.method == "POST":
             c_id = int(request.form["candidate_id"])
             exists = Confirmed.query.filter_by(candidate_id=c_id).first()
@@ -134,42 +133,26 @@ def create_app():
                 db.session.add(Confirmed(candidate_id=c_id))
                 db.session.commit()
             return redirect(url_for("confirm"))
-    
-        # ---- Confirmed + Candidate JOIN
         confirmed = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
             .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc())
             .all()
         )
-    
-        confirmed_info = []
-    
-        for cnf, c in confirmed:
-            # 参加状況を取得
-            attends = Attendance.query.filter_by(event_id=cnf.id).all()
-    
-            participants = [a.name for a in attends if a.status == "参加"]
-            absents = [a.name for a in attends if a.status == "不参加"]
-    
+        confirmed_list = db.session.query(Confirmed).all()
+        confirmed_ids = [c.candidate_id for c in confirmed_list]
+
+        def format_candidate(c):
             d = date(c.year, c.month, c.day)
             youbi = ["月","火","水","木","金","土","日"][d.weekday()]
-    
-            confirmed_info.append({
-                "id": cnf.id,
-                "candidate_id": c.id,
-                "gym": c.gym,
-                "md": f"{c.month}/{c.day}（{youbi}）",
-                "start": c.start,
-                "end": c.end,
-                "participants": participants,
-                "absents": absents,
-                "count_participants": len(participants),
-                "count_absents": len(absents)
-            })
-    
-        return render_template("confirm.html", candidates=candidates, confirmed_info=confirmed_info)
-
+            return {"id": c.id, "gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）"}
+        candidates_fmt = [format_candidate(c) for c in candidates]
+        confirmed_fmt = []
+        for cnf, c in confirmed:
+            d = date(c.year, c.month, c.day)
+            youbi = ["月","火","水","木","金","土","日"][d.weekday()]
+            confirmed_fmt.append((cnf, {"gym": c.gym, "start": c.start, "end": c.end, "md": f"{c.month}/{c.day}（{youbi}）"}))
+        return render_template("confirm.html", candidates=candidates_fmt, confirmed=confirmed_fmt, confirmed_ids=confirmed_ids)
 
     @app.route("/confirm/<int:candidate_id>/unconfirm", methods=["POST"])
     def unconfirm(candidate_id):
@@ -178,18 +161,6 @@ def create_app():
             db.session.delete(conf)
             db.session.commit()
         return redirect(url_for("confirm"))
-
-    @app.route("/manage_event/<int:event_id>", methods=["GET"])
-    def manage_event_attendance(event_id):
-        event = Confirmed.query.get_or_404(event_id)
-        candidate = Candidate.query.get_or_404(event.candidate_id)
-    
-        attendance = Attendance.query.filter_by(event_id=event_id).all()
-    
-        return render_template("manage_event_attendance.html",
-                               event=event,
-                               candidate=candidate,
-                               attendance=attendance)
 
     @app.route("/register", methods=["GET"])
     def register():
