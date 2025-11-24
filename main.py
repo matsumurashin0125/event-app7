@@ -367,7 +367,10 @@ def create_app():
         end_utc = dt_end.astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")
     
         uid = f"{candidate.id}-{start_utc}@event-app.local"
-    
+
+        start_str = start_local.strftime("%H:%M")
+        end_str = end_local.strftime("%H:%M")
+
         ics_content = (
             "BEGIN:VCALENDAR\r\n"
             "VERSION:2.0\r\n"
@@ -379,7 +382,7 @@ def create_app():
             "DTSTAMP:{dtstamp_utc}\r\n"
             "DTSTART:{start_utc}\r\n"
             "DTEND:{end_utc}\r\n"
-            "SUMMARY:イベント参加登録\r\n"
+            "SUMMARY:{location} ({start_str}〜{end_str})\r\n"
             "DESCRIPTION:{recipient_name} さんの参加登録です\r\n"
             "LOCATION:{location}\r\n"
             "STATUS:CONFIRMED\r\n"
