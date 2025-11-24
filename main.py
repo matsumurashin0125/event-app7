@@ -305,32 +305,30 @@ def create_app():
 
     import base64
     import pytz
+    from datetime import datetime
     from sendgrid import SendGridAPIClient
     from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
     
+    
     def send_ics_via_sendgrid(candidate, recipient_name, recipient_email, local_tz="Asia/Tokyo"):
         """
-        SendGrid API を使って ICS ファイルを添付して送信する。
-        candidate: 候補日オブジェクト
-        recipient_name: 宛名
-        recipient_email: 宛先メールアドレス
+        SendGrid を使って iPhone / Google / Outlook で必ず開ける ICS を送信する
         """
     
         # ==========
-        # 1) ICSファイル生成
+        # 1)  ローカル時刻 → aware datetime
         # ==========
-        from datetime import datetime, timedelta
-    
         tz = pytz.timezone(local_tz)
     
-        event_start = tz.localize(datetime(
+        dt_start = tz.localize(datetime(
             candidate.year,
             candidate.month,
             candidate.day,
             int(candidate.start.split(":")[0]),
             int(candidate.start.split(":")[1])
         ))
-        event_end = tz.localize(datetime(
+    
+        dt_end = tz.localize(datetime(
             candidate.year,
             candidate.month,
             candidate.day,
@@ -338,48 +336,66 @@ def create_app():
             int(candidate.end.split(":")[1])
         ))
     
-        # ics content
+        # ==========
+        # 2)  iPhone 互換の ICS を生成（完全版）
+        #    Apple は UTC(Z) と METHOD:REQUEST が必須
+        # ==========
+        dtstamp_utc = dt_start.astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")
+        start_utc = dt_start.astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")
+        end_utc = dt_end.astimezone(pytz.utc).strftime("%Y%m%dT%H%M%SZ")
+    
+        uid = f"{candidate.id}-{start_utc}@event-app.local"
+    
         ics_content = f"""BEGIN:VCALENDAR
     VERSION:2.0
-    PRODID:-//Your App//JP
     CALSCALE:GREGORIAN
+    METHOD:REQUEST
+    PRODID:-//EventApp//JP
     BEGIN:VEVENT
-    DTSTAMP:{event_start.strftime('%Y%m%dT%H%M%S')}
-    DTSTART:{event_start.strftime('%Y%m%dT%H%M%S')}
-    DTEND:{event_end.strftime('%Y%m%dT%H%M%S')}
+    UID:{uid}
+    DTSTAMP:{dtstamp_utc}
+    DTSTART:{start_utc}
+    DTEND:{end_utc}
     SUMMARY:イベント参加登録
-    DESCRIPTION:{recipient_name} さんの参加登録
+    DESCRIPTION:{recipient_name} さんの参加登録です
     LOCATION:{candidate.gym}
+    STATUS:CONFIRMED
+    SEQUENCE:0
     END:VEVENT
     END:VCALENDAR
     """
     
-        # Base64 エンコード（SendGridは必須）
-        encoded_file = base64.b64encode(ics_content.encode()).decode()
+        # ==========
+        # 3) Base64 エンコード（SendGrid 必須）
+        # ==========
+        encoded = base64.b64encode(ics_content.encode("utf-8")).decode()
     
         # ==========
-        # 2) SendGrid 送信処理
+        # 4) SendGrid メール作成
         # ==========
         message = Mail(
             from_email=(os.environ["FROM_EMAIL"], os.environ.get("FROM_NAME", "Event App")),
             to_emails=recipient_email,
-            subject="イベント参加登録（カレンダー添付）",
+            subject=f"【参加登録】カレンダーに追加できます",
             html_content=f"""
                 <p>{recipient_name} さん、参加登録ありがとうございます。</p>
                 <p>カレンダーに追加できる .ics ファイルを添付しています。</p>
+                <p>iPhone・Google・Outlook 全てに対応しています。</p>
             """
         )
     
-        # 添付ファイル設定
+        # 添付ファイル
         attachment = Attachment()
-        attachment.file_content = FileContent(encoded_file)
+        attachment.file_content = FileContent(encoded)
         attachment.file_type = FileType("text/calendar")
         attachment.file_name = FileName("event.ics")
         attachment.disposition = Disposition("attachment")
     
         message.attachment = attachment
     
-        # 実際に送信
+        # ==========
+        # 5) SendGrid 送信
+        # ==========
         try:
             sg = SendGridAPIClient(os.environ["SENDGRID_API_KEY"])
             response = sg.send(message)
@@ -388,7 +404,6 @@ def create_app():
         except Exception as e:
             print("SendGrid Error:", e)
             return False
-
 
     # DB create
     with app.app_context():
