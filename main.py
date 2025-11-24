@@ -254,16 +254,6 @@ def create_app():
 
         return redirect(url_for("register_event", candidate_id=candidate_id))
 
-        @app.route("/attendance_list")
-        def attendance_list():
-            events = (
-                db.session.query(Attendance, Confirmed, Candidate)
-                .join(Confirmed, Attendance.event_id == Confirmed.id)
-                .join(Candidate, Confirmed.candidate_id == Candidate.id)
-                .all()
-            )
-            return render_template("attendance_list.html", events=events)
-
     # DB作成
     with app.app_context():
         db.create_all()
