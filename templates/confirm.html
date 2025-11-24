@@ -19,7 +19,8 @@
     </tr>
 
     {% for c in candidates %}
-    <tr>
+    <tr class="{% if c.id in confirmed_ids %}confirmed{% endif %}">
+
         <td>{{ c.year }}-{{ '%02d'|format(c.month) }}-{{ '%02d'|format(c.day) }}</td>
         <td>{{ c.gym }}</td>
         <td>{{ c.start }} 〜 {{ c.end }}</td>
