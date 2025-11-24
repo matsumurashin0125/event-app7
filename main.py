@@ -305,74 +305,92 @@ def create_app():
         )
         return base + params
 
-    def send_ics_via_gmail(candidate_obj, recipient_name, recipient_email,
-                       smtp_user, smtp_pass, smtp_server="smtp.gmail.com",
-                       smtp_port=587, local_tz=LOCAL_TZ):
-
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from email.mime.application import MIMEApplication
-        import uuid
-        import traceback
+    import base64
+    import pytz
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
     
-        # ---- 日付の組み立て ----
-        y, m, d = candidate_obj.year, candidate_obj.month, candidate_obj.day
-        sh, smi = map(int, candidate_obj.start.split(":"))
-        eh, emi = map(int, candidate_obj.end.split(":"))
+    def send_ics_via_sendgrid(candidate, recipient_name, recipient_email, local_tz="Asia/Tokyo"):
+        """
+        SendGrid API を使って ICS ファイルを添付して送信する。
+        candidate: 候補日オブジェクト
+        recipient_name: 宛名
+        recipient_email: 宛先メールアドレス
+        """
     
-        dtstart_local = datetime(y, m, d, sh, smi, tzinfo=local_tz)
-        dtend_local = datetime(y, m, d, eh, emi, tzinfo=local_tz)
+        # ==========
+        # 1) ICSファイル生成
+        # ==========
+        from datetime import datetime, timedelta
     
-        # ---- ICS 本文作成 ----
-        title = f"{candidate_obj.gym} 練習"
-        description = f"{recipient_name} さんが参加登録しました。"
-        location = candidate_obj.gym
+        tz = pytz.timezone(local_tz)
     
-        ics_text = make_ics(
-            summary=title,
-            description=description,
-            location=location,
-            dtstart_local=dtstart_local,
-            dtend_local=dtend_local,
-            uid=f"{uuid.uuid4()}@eventapp.local"
+        event_start = tz.localize(datetime(
+            candidate.year,
+            candidate.month,
+            candidate.day,
+            int(candidate.start.split(":")[0]),
+            int(candidate.start.split(":")[1])
+        ))
+        event_end = tz.localize(datetime(
+            candidate.year,
+            candidate.month,
+            candidate.day,
+            int(candidate.end.split(":")[0]),
+            int(candidate.end.split(":")[1])
+        ))
+    
+        # ics content
+        ics_content = f"""BEGIN:VCALENDAR
+    VERSION:2.0
+    PRODID:-//Your App//JP
+    CALSCALE:GREGORIAN
+    BEGIN:VEVENT
+    DTSTAMP:{event_start.strftime('%Y%m%dT%H%M%S')}
+    DTSTART:{event_start.strftime('%Y%m%dT%H%M%S')}
+    DTEND:{event_end.strftime('%Y%m%dT%H%M%S')}
+    SUMMARY:イベント参加登録
+    DESCRIPTION:{recipient_name} さんの参加登録
+    LOCATION:{candidate.gym}
+    END:VEVENT
+    END:VCALENDAR
+    """
+    
+        # Base64 エンコード（SendGridは必須）
+        encoded_file = base64.b64encode(ics_content.encode()).decode()
+    
+        # ==========
+        # 2) SendGrid 送信処理
+        # ==========
+        message = Mail(
+            from_email=(os.environ["FROM_EMAIL"], os.environ.get("FROM_NAME", "Event App")),
+            to_emails=recipient_email,
+            subject="イベント参加登録（カレンダー添付）",
+            html_content=f"""
+                <p>{recipient_name} さん、参加登録ありがとうございます。</p>
+                <p>カレンダーに追加できる .ics ファイルを添付しています。</p>
+            """
         )
     
-        # ---- メール本文 ----
-        body_text = (
-            f"{recipient_name} 様\n\n"
-            "参加登録ありがとうございます。\n"
-            "添付の .ics を開いて予定に追加してください。\n"
-        )
+        # 添付ファイル設定
+        attachment = Attachment()
+        attachment.file_content = FileContent(encoded_file)
+        attachment.file_type = FileType("text/calendar")
+        attachment.file_name = FileName("event.ics")
+        attachment.disposition = Disposition("attachment")
     
-        # === ★ ここから MIMEApplication 方式 ★ ===
-        msg = MIMEMultipart()
-        msg["From"] = smtp_user
-        msg["To"] = recipient_email
-        msg["Subject"] = f"[予定] {title}"
+        message.attachment = attachment
     
-        # 本文
-        msg.attach(MIMEText(body_text, "plain", "utf-8"))
-    
-        # ICS 添付
-        part = MIMEApplication(ics_text, _subtype="ics")
-        part.add_header("Content-Disposition", "attachment", filename="event.ics")
-        msg.attach(part)
-        # === ★ ここまで ★ ===
-    
-        # ---- Gmail 送信 ----
+        # 実際に送信
         try:
-            server = smtplib.SMTP(smtp_server, smtp_port)
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-            server.quit()
-        except Exception:
-            print("ICS send FAILED")
-            print(traceback.format_exc())
+            sg = SendGridAPIClient(os.environ["SENDGRID_API_KEY"])
+            response = sg.send(message)
+            print("SendGrid Response:", response.status_code)
+            return True
+        except Exception as e:
+            print("SendGrid Error:", e)
             return False
 
-        return True
 
     # DB create
     with app.app_context():
