@@ -4,33 +4,39 @@
   <meta charset="utf-8">
   <title>参加登録</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <style>
     body{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","メイリオ",sans-serif;padding:20px}
-    .card{max-width:720px;margin:20px auto;border:1px solid #eee;padding:16px;border-radius:8px}
-    label{display:block;margin-bottom:6px;font-weight:600}
-    select,input[type="text"],button{padding:8px;font-size:16px;width:100%;box-sizing:border-box}
-    .btn{background:#2b7cff;color:#fff;border:none;padding:10px;border-radius:6px;cursor:pointer}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border:1px solid #f0f0f0;padding:8px;text-align:left}
-    .muted{color:#666;font-size:13px}
+    .card{max-width:720px;margin:20px auto;border:1px solid #eee;padding:16px;border-radius:10px;background:white;box-shadow:0 2px 4px rgba(0,0,0,0.05)}
+    .btn{background:#2b7cff;color:#fff;border:none;padding:10px 12px;width:100%;border-radius:6px;cursor:pointer;font-size:16px}
+
+    .fixed-name {
+        background:#f4f8ff;
+        padding:10px;
+        border-left:4px solid #2b7cff;
+        margin-bottom:16px;
+        border-radius:6px;
+        font-size:16px;
+    }
+
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{border:1px solid #eee;padding:8px;text-align:left}
+    h3{margin-top:24px}
   </style>
 </head>
 <body>
   <div class="card">
     <h2>参加登録 — {{ candidate.gym }} {{ candidate.year }}/{{ candidate.month }}/{{ candidate.day }}</h2>
 
-    <form method="POST" action="">
-      <div>
-        <label for="name">名前</label>
-        <select name="name" id="name" required>
-          <option value="">-- 選択してください --</option>
-          {% for m in members %}
-            <option value="{{ m }}"
-                {% if default_name == m %} selected {% endif %}
-            >{{ m }}</option>
-          {% endfor %}
-        </select>
-      </div>
+    <!-- 名前は固定表示 -->
+    <div class="fixed-name">
+        👤 登録者：<strong>{{ default_name }}</strong>
+    </div>
+
+    <form method="POST">
+
+      <!-- hidden で送る -->
+      <input type="hidden" name="name" value="{{ default_name }}">
 
       <div style="margin-top:10px;">
         <label>出欠</label>
@@ -39,12 +45,12 @@
         <label><input type="radio" name="status" value="欠席"> 欠席</label>
       </div>
 
-      <div style="margin-top:12px;">
-        <button class="btn" type="submit">送信（参加であればGoogleカレンダー/ICSを送信）</button>
+      <div style="margin-top:16px;">
+        <button class="btn" type="submit">送信（参加ならICSメール送信）</button>
       </div>
     </form>
 
-    <h3 style="margin-top:18px">現在の出欠</h3>
+    <h3>現在の出欠</h3>
     <table>
       <thead><tr><th>名前</th><th>状態</th><th>登録日時</th></tr></thead>
       <tbody>
@@ -58,7 +64,6 @@
       </tbody>
     </table>
 
-    <p class="muted">※ メールアドレスはサーバ側で管理され、外部には公開されません（テンプレートに表示されません）。</p>
   </div>
 </body>
 </html>
