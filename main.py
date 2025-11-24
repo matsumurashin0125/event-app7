@@ -118,17 +118,18 @@ def create_app():
             Candidate.day.asc(),
             Candidate.start.asc()
         ).all()
-
+    
         if request.method == "POST":
             c_id = int(request.form["candidate_id"])
             exists = Confirmed.query.filter_by(candidate_id=c_id).first()
-
+    
             if not exists:
                 db.session.add(Confirmed(candidate_id=c_id))
                 db.session.commit()
-
+    
             return redirect(url_for("confirm"))
-
+    
+        # 確定済み情報
         confirmed = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
@@ -140,18 +141,42 @@ def create_app():
             )
             .all()
         )
-
-        confirmed_list = (
-            db.session.query(Confirmed)
-            .all()
-        )
-        
+    
+        # 確定済みIDリスト
+        confirmed_list = db.session.query(Confirmed).all()
         confirmed_ids = [c.candidate_id for c in confirmed_list]
-        
+    
+        # -----------------------------
+        # 候補日を月/日（曜）付きに整形
+        # -----------------------------
+        def format_candidate(c):
+            d = datetime.date(c.year, c.month, c.day)
+            youbi = ["月","火","水","木","金","土","日"][d.weekday()]
+            return {
+                "id": c.id,
+                "gym": c.gym,
+                "start": c.start,
+                "end": c.end,
+                "md": f"{c.month}/{c.day}（{youbi}）"
+            }
+    
+        candidates_fmt = [format_candidate(c) for c in candidates]
+    
+        confirmed_fmt = []
+        for cnf, c in confirmed:
+            d = datetime.date(c.year, c.month, c.day)
+            youbi = ["月","火","水","木","金","土","日"][d.weekday()]
+            confirmed_fmt.append((cnf, {
+                "gym": c.gym,
+                "start": c.start,
+                "end": c.end,
+                "md": f"{c.month}/{c.day}（{youbi}）"
+            }))
+    
         return render_template(
             "confirm.html",
-            candidates=candidates,
-            confirmed=confirmed,
+            candidates=candidates_fmt,
+            confirmed=confirmed_fmt,
             confirmed_ids=confirmed_ids
         )
 
