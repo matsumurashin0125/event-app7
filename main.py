@@ -355,8 +355,15 @@ def create_app():
         # Attach ICS as text/calendar; method=REQUEST
         ics_bytes = ics_text.encode("utf-8")
         # email.message's add_attachment with maintype/subtype for text/calendar:
-        msg.add_attachment(ics_bytes, maintype="text", subtype="calendar", filename="invite.ics",
-                           headers={"Content-Type": 'text/calendar; method=REQUEST; charset="utf-8"'})
+        msg.add_attachment(
+            ics_bytes,
+            maintype="text",
+            subtype="calendar",
+            filename="invite.ics",
+            headers=[
+                ("Content-Type", 'text/calendar; method=REQUEST; charset="utf-8"')
+            ]
+        )
 
         # Send via SMTP
         with smtplib.SMTP(smtp_server, smtp_port, timeout=30) as smtp:
