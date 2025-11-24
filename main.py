@@ -175,7 +175,7 @@ def create_app():
             db.session.add(att)
             db.session.commit()
 
-            return redirect(url_for("register")
+            return redirect(url_for("register"))
 
         attendance = Attendance.query.filter_by(event_id=event.id).all()
 
