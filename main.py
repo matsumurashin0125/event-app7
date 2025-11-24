@@ -345,24 +345,26 @@ def create_app():
     
         uid = f"{candidate.id}-{start_utc}@event-app.local"
     
-        ics_content = f"""BEGIN:VCALENDAR
-    VERSION:2.0
-    CALSCALE:GREGORIAN
-    METHOD:REQUEST
-    PRODID:-//EventApp//JP
-    BEGIN:VEVENT
-    UID:{uid}
-    DTSTAMP:{dtstamp_utc}
-    DTSTART:{start_utc}
-    DTEND:{end_utc}
-    SUMMARY:イベント参加登録
-    DESCRIPTION:{recipient_name} さんの参加登録です
-    LOCATION:{candidate.gym}
-    STATUS:CONFIRMED
-    SEQUENCE:0
-    END:VEVENT
-    END:VCALENDAR
-    """
+        ics_content = (
+            "BEGIN:VCALENDAR\r\n"
+            "VERSION:2.0\r\n"
+            "CALSCALE:GREGORIAN\r\n"
+            "METHOD:REQUEST\r\n"
+            "PRODID:-//EventApp//JP\r\n"
+            "BEGIN:VEVENT\r\n"
+            f"UID:{uid}\r\n"
+            f"DTSTAMP:{event_start.strftime('%Y%m%dT%H%M%SZ')}\r\n"
+            f"DTSTART:{event_start.strftime('%Y%m%dT%H%M%SZ')}\r\n"
+            f"DTEND:{event_end.strftime('%Y%m%dT%H%M%SZ')}\r\n"
+            "SUMMARY:イベント参加登録\r\n"
+            f"DESCRIPTION:{recipient_name} さんの参加登録です\r\n"
+            f"LOCATION:{candidate.gym}\r\n"
+            "STATUS:CONFIRMED\r\n"
+            "SEQUENCE:0\r\n"
+            "END:VEVENT\r\n"
+            "END:VCALENDAR\r\n"
+        )
+
     
         # ==========
         # 3) Base64 エンコード（SendGrid 必須）
