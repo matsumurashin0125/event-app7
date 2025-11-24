@@ -305,73 +305,73 @@ def create_app():
         )
         return base + params
 
-    def send_ics_via_gmail(candidate_obj, recipient_name, recipient_email, smtp_user, smtp_pass, smtp_server="smtp.gmail.com", smtp_port=587, local_tz=LOCAL_TZ):
-        """Generate ICS and send via Gmail SMTP with text/calendar attachment and an HTML email containing Google Calendar link."""
-        if not smtp_user or not smtp_pass:
-            raise RuntimeError("GMAIL_USER/GMAIL_PASS not set")
+    def send_ics_via_gmail(candidate_obj, recipient_name, recipient_email,
+                       smtp_user, smtp_pass, smtp_server="smtp.gmail.com",
+                       smtp_port=587, local_tz=LOCAL_TZ):
 
-        # compose datetimes
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from email.mime.application import MIMEApplication
+        import uuid
+        import traceback
+    
+        # ---- 日付の組み立て ----
         y, m, d = candidate_obj.year, candidate_obj.month, candidate_obj.day
         sh, smi = map(int, candidate_obj.start.split(":"))
         eh, emi = map(int, candidate_obj.end.split(":"))
+    
         dtstart_local = datetime(y, m, d, sh, smi, tzinfo=local_tz)
         dtend_local = datetime(y, m, d, eh, emi, tzinfo=local_tz)
-
+    
+        # ---- ICS 本文作成 ----
         title = f"{candidate_obj.gym} 練習"
-        description = f"{recipient_name} さんが参加登録しました。\n場所: {candidate_obj.gym}\n時間: {candidate_obj.start} - {candidate_obj.end}"
+        description = f"{recipient_name} さんが参加登録しました。"
         location = candidate_obj.gym
-
-        ics_text = make_ics(title, description, location, dtstart_local, dtend_local, uid=f"{uuid.uuid4()}@yourapp.local")
-
-        # Prepare email bodies
-        plain = (
+    
+        ics_text = make_ics(
+            summary=title,
+            description=description,
+            location=location,
+            dtstart_local=dtstart_local,
+            dtend_local=dtend_local,
+            uid=f"{uuid.uuid4()}@eventapp.local"
+        )
+    
+        # ---- メール本文 ----
+        body_text = (
             f"{recipient_name} 様\n\n"
             "参加登録ありがとうございます。\n"
-            "添付の .ics を開くか、下のリンクから Google カレンダーに追加してください。\n\n"
-            f"イベント: {title}\n場所: {location}\n時間: {candidate_obj.start} - {candidate_obj.end}\n\n"
-            "よろしくお願いします。"
+            "添付の .ics を開いて予定に追加してください。\n"
         )
-
-        gcal_link = make_google_calendar_link(title, description, location, dtstart_local, dtend_local)
-        html = (
-            f"<p>{recipient_name} 様</p>"
-            f"<p>参加登録ありがとうございます。以下の方法でカレンダーに追加できます：</p>"
-            f"<ol>"
-            f"<li>添付の <strong>invite.ics</strong> をダブルクリックして追加（Outlook/Google 等でインポート）</li>"
-            f"<li><a href=\"{gcal_link}\">Google カレンダーに追加する（ブラウザで開きます）</a></li>"
-            f"</ol>"
-            f"<p>イベント: <strong>{title}</strong><br>場所: {location}<br>時間: {candidate_obj.start} - {candidate_obj.end}</p>"
-            f"<p>よろしくお願いします。</p>"
-        )
-
-        # Build EmailMessage
-        msg = EmailMessage()
-        msg["Subject"] = f"[予定] {title} ({candidate_obj.year}/{candidate_obj.month}/{candidate_obj.day})"
+    
+        # === ★ ここから MIMEApplication 方式 ★ ===
+        msg = MIMEMultipart()
         msg["From"] = smtp_user
         msg["To"] = recipient_email
-        msg.set_content(plain)
-        msg.add_alternative(html, subtype="html")
+        msg["Subject"] = f"[予定] {title}"
+    
+        # 本文
+        msg.attach(MIMEText(body_text, "plain", "utf-8"))
+    
+        # ICS 添付
+        part = MIMEApplication(ics_text, _subtype="ics")
+        part.add_header("Content-Disposition", "attachment", filename="event.ics")
+        msg.attach(part)
+        # === ★ ここまで ★ ===
+    
+        # ---- Gmail 送信 ----
+        try:
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+            server.quit()
+        except Exception:
+            print("ICS send FAILED")
+            print(traceback.format_exc())
+            raise
 
-        # Attach ICS as text/calendar; method=REQUEST
-        ics_bytes = ics_text.encode("utf-8")
-        # email.message's add_attachment with maintype/subtype for text/calendar:
-        msg.add_attachment(
-            ics_bytes,
-            maintype="text",
-            subtype="calendar",
-            filename="invite.ics",
-            headers=[
-                'Content-Type: text/calendar; method=REQUEST; charset="utf-8"'
-            ]
-        )
-
-        # Send via SMTP
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=30) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.ehlo()
-            smtp.login(smtp_user, smtp_pass)
-            smtp.send_message(msg)
 
     # DB create
     with app.app_context():
