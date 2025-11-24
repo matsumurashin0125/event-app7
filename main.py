@@ -73,7 +73,7 @@ def create_app():
         if request.method == "POST":
             # 選択した名前をセッションへ保存
             session["user_name"] = request.form["user_name"]
-            return redirect(url_for("home"))
+            return redirect(url_for("register"))
 
         return render_template("set_name.html", members=members)
 
