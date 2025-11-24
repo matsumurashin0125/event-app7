@@ -1,6 +1,8 @@
+<!-- templates/home.html -->
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>メニュー</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/style.css">
@@ -9,16 +11,13 @@
 
 <h1>ページ選択</h1>
 
-<div class="menu-container">
+<div class="card-container" style="justify-content:center;">
 
-    <!-- 自分の名前を設定 -->
-    <a class="btn" href="{{ url_for('set_name') }}">自分の名前を設定</a>
-
-    <!-- 参加登録（一般） -->
-    <a class="btn" href="{{ url_for('register') }}">参加登録</a>
-
-    <!-- 管理者メニュー -->
-    <a class="btn admin-btn" href="{{ url_for('admin_menu') }}">管理者メニュー</a>
+    <div class="card" style="max-width:360px; text-align:center;">
+        <a class="btn" href="{{ url_for('register') }}">参加登録</a>
+        <a class="btn admin-btn" href="{{ url_for('admin_menu') }}">管理者メニュー</a>
+        <a class="btn back-btn" href="{{ url_for('set_name') }}">名前変更</a>
+    </div>
 
 </div>
 
