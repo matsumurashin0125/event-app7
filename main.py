@@ -41,25 +41,31 @@ def create_app():
     # ------------------------------
     # 候補日入力ページ（認証なし）
     # ------------------------------
+    
     @app.route("/candidate", methods=["GET", "POST"])
     def candidate():
         gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
-
+    
         # 時刻一覧
         times = []
         for h in range(18, 23):
             times.append(f"{h:02d}:00")
             times.append(f"{h:02d}:30")
-        times = times[:-1]  # 22:30まで
-
-        # 初期表示用の日付（3ヶ月後の月の1日）
+        times = times[:-1]
+    
+        # 初期日付
         today = datetime.today()
         base = (today.replace(day=1) + timedelta(days=92)).replace(day=1)
-
+    
         years = [base.year, base.year + 1]
         months = list(range(1, 13))
         days = list(range(1, 32))
-
+    
+        # ▼ 追加：確定済み Candidate の ID を取得
+        confirmed_ids = {
+            c.candidate_id for c in Confirmed.query.all()
+        }
+    
         if request.method == "POST":
             cand = Candidate(
                 year=int(request.form["year"]),
@@ -71,36 +77,35 @@ def create_app():
             )
             db.session.add(cand)
             db.session.commit()
-
+    
             return render_template(
                 "candidate.html",
-                years=years,
-                months=months,
-                days=days,
-                gyms=gyms,
-                times=times,
+                years=years, months=months, days=days,
+                gyms=gyms, times=times,
                 selected_year=cand.year,
                 selected_month=cand.month,
                 selected_day=cand.day,
                 selected_gym=cand.gym,
                 selected_start=cand.start,
                 selected_end=cand.end,
+                # ▼ 追加
+                confirmed_ids=confirmed_ids
             )
-
+    
         return render_template(
             "candidate.html",
-            years=years,
-            months=months,
-            days=days,
-            gyms=gyms,
-            times=times,
+            years=years, months=months, days=days,
+            gyms=gyms, times=times,
             selected_year=base.year,
             selected_month=base.month,
             selected_day=base.day,
             selected_gym="中平井",
             selected_start="18:00",
             selected_end="19:00",
+            # ▼ 追加
+            confirmed_ids=confirmed_ids
         )
+
 
     # ------------------------------
     # 日程確定（認証なし）
