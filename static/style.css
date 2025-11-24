@@ -36,7 +36,7 @@ h1, h2, h3 {
     background: #1c648b;
 }
 
-/* 管理者ボタンは色を変える */
+/* 管理者ボタン */
 .admin-btn {
     background: #27ae60;
 }
@@ -63,7 +63,6 @@ h1, h2, h3 {
     background: #c0392b !important;
 }
 
-
 /* ------------------------------
    入力フォーム
 ------------------------------ */
@@ -86,7 +85,6 @@ select, input[type="text"], input[type="number"] {
     border-radius: 8px;
     border: 1px solid #ccc;
 }
-
 
 /* ------------------------------
    カード（候補日 & 選択画面）
@@ -126,7 +124,7 @@ select, input[type="text"], input[type="number"] {
     color: #555;
 }
 
-/* ボタンをカード内に整列 */
+/* カード内のボタン */
 .card .btn {
     width: 100%;
     margin-top: 10px;
@@ -141,7 +139,8 @@ table {
     border-collapse: collapse;
     background: white;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: auto;   /* ← スマホで横スクロール可能に */
+    display: block;   /* ← スマホで崩れにくくなる */
 }
 
 th, td {
@@ -154,7 +153,6 @@ th {
     color: white;
 }
 
-/* 確定済み候補日を薄い灰色にする */
 .confirmed {
     background: #e0e0e0 !important;
 }
@@ -200,10 +198,48 @@ tr:nth-child(even) {
 }
 
 /* ------------------------------
-   スマホ最適化
+   スマホ最適化追加
 ------------------------------ */
 @media (max-width: 480px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    .btn {
+        width: 100%;        /* ← スマホでは全幅 */
+        font-size: 17px;
+        padding: 12px 16px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 16px;
+        max-width: none;
+    }
+
+    form {
+        max-width: 100%;
+    }
+
+    label {
+        font-size: 14px;
+    }
+
+    select, input {
+        font-size: 15px;
+    }
+
     .tile {
-        width: 80%;
+        width: 90%;          /* ← 1カラム優先 */
+        max-width: none;
     }
 }
