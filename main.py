@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, date, timezone
 from zoneinfo import ZoneInfo
 from email.message import EmailMessage
 from flask import Flask, render_template, request, redirect, url_for
+import traceback
 
 from models import db, Candidate, Confirmed, Attendance
 
@@ -187,8 +188,9 @@ def create_app():
                                            local_tz=LOCAL_TZ)
                     except Exception as e:
                         app.logger.error("ICS send failed: %s", e)
+                        app.logger.error(traceback.format_exc())  # ← これを追加！
                         # Do not block attendance registration on send failure
-
+            
             return redirect(url_for("register"))
 
         attendance = Attendance.query.filter_by(event_id=event.id).all()
