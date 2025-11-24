@@ -358,11 +358,18 @@ def create_app():
             "DTEND:{end_utc}\r\n"
             "SUMMARY:イベント参加登録\r\n"
             "DESCRIPTION:{recipient_name} さんの参加登録です\r\n"
-            "LOCATION:{candidate.gym}\r\n"
+            "LOCATION:{location}\r\n"
             "STATUS:CONFIRMED\r\n"
             "SEQUENCE:0\r\n"
             "END:VEVENT\r\n"
             "END:VCALENDAR\r\n"
+        ).format(
+            uid=uid,
+            dtstamp_utc=dtstamp_utc,
+            start_utc=start_utc,
+            end_utc=end_utc,
+            recipient_name=recipient_name,
+            location=candidate.gym
         )
 
     
